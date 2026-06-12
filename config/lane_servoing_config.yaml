@@ -1,5 +1,17 @@
-base_speed: 0.13
+base_speed: 0.75
 curve_speed: 0
-d_gain: 0.0
+d_gain: 0.25
 detection_threshold: 100
-p_gain: 0.0
+p_gain: 0.71
+
+white_lower_h: 0
+white_lower_s: 0
+white_lower_v: 150
+white_upper_h: 179
+white_upper_s: 70
+yellow_lower_h: 0
+yellow_lower_s: 70
+yellow_lower_v: 150
+yellow_upper_h: 90
+yellow_upper_s: 255
+yellow_upper_v: 255
