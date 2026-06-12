@@ -18,7 +18,21 @@ _white_lower = np.array([_h.get('white_lower_h', 0),   _h.get('white_lower_s', 0
 _white_upper = np.array([_h.get('white_upper_h', 0), _h.get('white_upper_s', 0), _h.get('white_upper_v', 0)])
 
 def detect_lane_markings(image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-    raise NotImplementedError("TODO: Implement this function")
+    "cropping bottom half of the image to not get confused with the wall "
+    image = image[160:,:,:]
+
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+    # 2. Create the Yellow Mask
+    # This finds all pixels that fall between the yellow bounds defined in your config
+    mask_yellow = cv2.inRange(hsv, _yellow_lower, _yellow_upper)
+
+    # 3. Create the White Mask
+    # This finds all pixels that fall between the white bounds
+    mask_white = cv2.inRange(hsv, _white_lower, _white_upper)
+
+    # 4. Return both masks as a tuple
+    return mask_yellow, mask_white
 
 
 
