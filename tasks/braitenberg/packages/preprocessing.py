@@ -10,8 +10,8 @@ try:
 except FileNotFoundError:
     _h = {}
 
-lower_hsv = np.array([_h.get('lower_h', 0),   _h.get('lower_s', 0),   _h.get('lower_v', 0)])
-upper_hsv = np.array([_h.get('upper_h', 179),  _h.get('upper_s', 255), _h.get('upper_v', 255)])
+lower_hsv = np.array([_h.get('lower_h', 15),   _h.get('lower_s', 50),   _h.get('lower_v', 50)])
+upper_hsv = np.array([_h.get('upper_h', 35),  _h.get('upper_s', 255), _h.get('upper_v', 255)])
 
 
 def preprocess(image_rgb: np.ndarray) -> np.ndarray:

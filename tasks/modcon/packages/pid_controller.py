@@ -25,4 +25,17 @@ def PIDController(
     prev_int: float,
     delta_t: float,
 ) -> Tuple[float, float, float, float]:
-    raise NotImplementedError("TODO: Implement this function")
+    e = float(np.arctan2(np.sin(theta_ref - theta_hat),
+                         np.cos(theta_ref - theta_hat)))
+
+    # Integral — Euler forward sum, with simple anti-windup clamp
+    e_int = prev_int + e * delta_t
+    e_int = float(np.clip(e_int, MIN_OMEGA / (K_I + 1e-9), MAX_OMEGA / (K_I + 1e-9)))
+
+    # Derivative — backward Euler finite difference
+    e_der = (e - prev_e) / delta_t if delta_t > 1e-6 else 0.0
+
+    omega = K_P * e + K_I * e_int + K_D * e_der
+
+    return v_0, omega, e, e_int
+
