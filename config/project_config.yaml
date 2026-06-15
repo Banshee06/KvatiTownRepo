@@ -1,0 +1,22 @@
+white_lower_h: 0
+white_lower_s: 0
+white_lower_v: 150
+white_upper_h: 179
+white_upper_s: 70
+white_upper_v: 255
+yellow_lower_h: 0
+yellow_lower_s: 70
+yellow_lower_v: 150
+yellow_upper_h: 90
+yellow_upper_s: 255
+yellow_upper_v: 255
+red_lower_h: 0
+red_upper_h: 10
+red_lower_s: 100
+red_upper_s: 255
+red_lower_v: 100
+red_upper_v: 255
+red_lower_h2: 165
+red_upper_h2: 179
+# The reason for defining two hue values is the architecture of how the hsv wheel is constructed
+# red is directly at the start and at the end of that wheel hence one needs two hue intervals saturation and value dont change
