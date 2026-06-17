@@ -5,7 +5,7 @@ import cv2
 import yaml
 # we are using the same code from the lane_servoing task
 # config file is different
-_HSV_FILE = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'config', 'project_config.yaml')
+_HSV_FILE = os.path.join(os.path.dirname(__file__), '..', '..', '..', '..' 'config', 'project_config.yaml')
 try:
     with open(_HSV_FILE) as _f:
         _h = yaml.safe_load(_f) or {}
