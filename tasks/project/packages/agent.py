@@ -6,6 +6,7 @@ import threading
 import queue
 import cv2
 import time
+import numpy as np
 
 from tasks.project.packages.agents.lane_serving_agent import LaneServoingAgent
 from tasks.project.packages.agents.detection_agent import ObjectDetectionAgent, CLASS_NAMES, CLASS_COLORS
