@@ -245,6 +245,26 @@ def _draw_mask_view(frame_bgr):
     return grid
 
 
+def _safe_set_wheels(wheels, left, right, runtime=None):
+    """Send wheel commands without allowing an I2C/HAT error to kill the UI loop."""
+    try:
+        wheels.set_wheels_speed(left, right)
+        if runtime is not None:
+            runtime.update_status(motor_error='')
+        return True
+    except Exception as e:
+        message = f"{type(e).__name__}: {e}"
+        print(f"[ProjectAgent] Wheel command failed: {message}")
+        if runtime is not None:
+            runtime.stop()
+            runtime.update_status(
+                motor_error=message,
+                left_pwm=0.0,
+                right_pwm=0.0,
+            )
+        return False
+
+
 def main(camera, wheels, leds, stop_event, runtime=None):
     """Called by server.py with hardware already initialised."""
     global _last_detections
@@ -321,7 +341,8 @@ def main(camera, wheels, leds, stop_event, runtime=None):
         else:
             left, right, state = 0.0, 0.0, controller.state.name
 
-        wheels.set_wheels_speed(left, right)
+        if not _safe_set_wheels(wheels, left, right, runtime):
+            left, right = 0.0, 0.0
         nav_status = controller.status()
         debug_frame = _draw_overlay(
             frame_bgr, detections, controller, det_agent, left, right, runtime.is_running()
@@ -351,5 +372,5 @@ def main(camera, wheels, leds, stop_event, runtime=None):
             lane_detection_threshold=float(lane_agent.detection_threshold),
         )
 
-    wheels.set_wheels_speed(0.0, 0.0)
+    _safe_set_wheels(wheels, 0.0, 0.0, runtime)
     runtime.stop()

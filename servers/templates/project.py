@@ -284,6 +284,7 @@ function refreshStatus() {
                 Frames: data.frame_count,
                 'Confidence': data.conf_threshold,
                 'NMS': data.nms_threshold,
+                'Motor error': data.motor_error || '',
             };
             document.getElementById('statusTable').innerHTML = Object.entries(fields).map(([k, v]) =>
                 `<div class="row"><span class="key">${k}</span><span class="val">${JSON.stringify(v ?? '')}</span></div>`
