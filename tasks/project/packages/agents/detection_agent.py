@@ -13,7 +13,7 @@ from tasks.project.packages.detection import integration as student
 #modified the path to load the integration logit directly from the project folder
 # config files containing the threshold is also moved seperately
 _CONFIG_FILE = os.path.normpath(os.path.join(
-    os.path.dirname(__file__), '..', '..', '..', '..' 'config', 'project_detection.yaml'
+    os.path.dirname(__file__), '..', '..', '..', '..', 'config', 'project_detection.yaml'
 ))
 
 _PROJECT_ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', '..', '..','..'))

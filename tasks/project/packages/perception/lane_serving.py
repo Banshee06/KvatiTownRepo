@@ -5,7 +5,7 @@ import cv2
 import yaml
 # we are using the same code from the lane_servoing task
 # config file is different
-_HSV_FILE = os.path.join(os.path.dirname(__file__), '..', '..', '..', '..' 'config', 'project_config.yaml')
+_HSV_FILE = os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', 'config', 'project_config.yaml')
 try:
     with open(_HSV_FILE) as _f:
         _h = yaml.safe_load(_f) or {}
@@ -60,12 +60,46 @@ def detect_lane_markings(image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
 
 
 
-def set_hsv_bounds(yellow_lower, yellow_upper, white_lower, white_upper):
+def set_hsv_bounds(
+    yellow_lower,
+    yellow_upper,
+    white_lower,
+    white_upper,
+    red_lower1=None,
+    red_upper1=None,
+    red_lower2=None,
+    red_upper2=None,
+):
     global _yellow_lower, _yellow_upper, _white_lower, _white_upper
+    global _red_lower1, _red_upper1, _red_lower2, _red_upper2
     _yellow_lower    = np.array(yellow_lower)
     _yellow_upper    = np.array(yellow_upper)
     _white_lower = np.array(white_lower)
     _white_upper = np.array(white_upper)
+    if red_lower1 is not None:
+        _red_lower1 = np.array(red_lower1)
+    if red_upper1 is not None:
+        _red_upper1 = np.array(red_upper1)
+    if red_lower2 is not None:
+        _red_lower2 = np.array(red_lower2)
+    if red_upper2 is not None:
+        _red_upper2 = np.array(red_upper2)
+
+
+def apply_hsv_config(config):
+    """Apply a project_config.yaml-style HSV dictionary without restarting."""
+    current = get_hsv_bounds()
+    current.update({k: int(v) for k, v in config.items() if k in current})
+    set_hsv_bounds(
+        [current['yellow_lower_h'], current['yellow_lower_s'], current['yellow_lower_v']],
+        [current['yellow_upper_h'], current['yellow_upper_s'], current['yellow_upper_v']],
+        [current['white_lower_h'], current['white_lower_s'], current['white_lower_v']],
+        [current['white_upper_h'], current['white_upper_s'], current['white_upper_v']],
+        [current['red_lower_h'], current['red_lower_s'], current['red_lower_v']],
+        [current['red_upper_h'], current['red_upper_s'], current['red_upper_v']],
+        [current['red_lower_h2'], current['red_lower_s'], current['red_lower_v']],
+        [current['red_upper_h2'], current['red_upper_s'], current['red_upper_v']],
+    )
 
 def get_hsv_bounds():
     return {
@@ -75,4 +109,8 @@ def get_hsv_bounds():
         'white_lower_h':  int(_white_lower[0]), 'white_upper_h':  int(_white_upper[0]),
         'white_lower_s':  int(_white_lower[1]), 'white_upper_s':  int(_white_upper[1]),
         'white_lower_v':  int(_white_lower[2]), 'white_upper_v':  int(_white_upper[2]),
+        'red_lower_h':    int(_red_lower1[0]),  'red_upper_h':    int(_red_upper1[0]),
+        'red_lower_s':    int(_red_lower1[1]),  'red_upper_s':    int(_red_upper1[1]),
+        'red_lower_v':    int(_red_lower1[2]),  'red_upper_v':    int(_red_upper1[2]),
+        'red_lower_h2':   int(_red_lower2[0]),  'red_upper_h2':   int(_red_upper2[0]),
     }

@@ -72,8 +72,12 @@ class LEDController:
         if self._driver is None:
             return
         try:
-
-            self._driver.set_all(color)
+            rgb = [float(c) / 255.0 if max(color) > 1 else float(c) for c in color]
+            if hasattr(self._driver, 'set_all'):
+                self._driver.set_all(rgb)
+            else:
+                for led in (0, 2, 3, 4):
+                    self._driver.set_rgb(led, rgb)
         except Exception as e:
             print(f"[LED] {e}")
 
@@ -94,6 +98,11 @@ class NavigationController:
         self._turn_t        = 0.0
         self._red_cooldown  = 0.0
         self._duckie_resume = 0.0
+        self._last_stop_flag = False
+        self._last_stop_reason = ''
+        self._last_red_close = False
+        self._last_lane_command = (0.0, 0.0)
+        self._last_output = (0.0, 0.0)
 
         print("[NavCtrl] Ready — LANE_FOLLOWING")
         self.led.solid(LED_DRIVING)
@@ -108,8 +117,13 @@ class NavigationController:
         red_close           = _is_red_line_close(red_mask) and now > self._red_cooldown
         lane_l, lane_r      = self.lane_agent.compute_commands(frame_rgb)
 
+        self._last_stop_flag = stop_flag
+        self._last_stop_reason = reason
+        self._last_red_close = red_close
+        self._last_lane_command = (lane_l, lane_r)
 
         left, right = self._fsm(now, stop_flag, reason, red_close, lane_l, lane_r)
+        self._last_output = (left, right)
 
 
         if self.state == State.GOAL_REACHED:
@@ -184,4 +198,17 @@ class NavigationController:
         return {
             'nav_state': self.state.name,
             'nav_route': self.navigator.progress() if self.navigator.has_route() else 'no route',
+            'next_action': self.navigator.peek_action() if self.navigator.has_route() else '',
+            'stopped_by_detection': self._last_stop_flag,
+            'stop_reason': self._last_stop_reason,
+            'red_line_detected': self._last_red_close,
+            'turn_action': self._turn_action,
+            'lane_command': {
+                'left': float(self._last_lane_command[0]),
+                'right': float(self._last_lane_command[1]),
+            },
+            'output_command': {
+                'left': float(self._last_output[0]),
+                'right': float(self._last_output[1]),
+            },
         }

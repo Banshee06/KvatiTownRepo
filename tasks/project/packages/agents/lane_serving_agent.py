@@ -9,7 +9,7 @@ from tasks.project.packages.perception import lane_serving as student
 from tasks.project.packages.perception.curve_behavior import detect_curve
 
 _CONFIG_FILE = os.path.normpath(os.path.join(
-    os.path.dirname(__file__), '..', '..', '..', '..' 'config', 'project_config.yaml'
+    os.path.dirname(__file__), '..', '..', '..', '..', 'config', 'project_config.yaml'
 ))
 
 _LINE_OFFSET = 160
