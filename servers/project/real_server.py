@@ -155,6 +155,21 @@ def get_config():
     })
 
 
+@app.route('/get_hsv')
+def get_hsv_compat():
+    """Compatibility for stale cached pages from older dashboards."""
+    project_cfg = _project_config_with_defaults()
+    hsv_keys = (
+        'white_lower_h', 'white_lower_s', 'white_lower_v',
+        'white_upper_h', 'white_upper_s', 'white_upper_v',
+        'yellow_lower_h', 'yellow_lower_s', 'yellow_lower_v',
+        'yellow_upper_h', 'yellow_upper_s', 'yellow_upper_v',
+        'red_lower_h', 'red_upper_h', 'red_lower_s', 'red_upper_s',
+        'red_lower_v', 'red_upper_v', 'red_lower_h2', 'red_upper_h2',
+    )
+    return jsonify({k: project_cfg.get(k) for k in hsv_keys if k in project_cfg})
+
+
 @app.route('/start', methods=['POST'])
 def start():
     runtime.start()
@@ -167,6 +182,12 @@ def stop():
     if wheels:
         wheels.set_wheels_speed(0.0, 0.0)
     return jsonify({'status': 'stopped'})
+
+
+@app.route('/keys', methods=['POST'])
+def keys_compat():
+    """No-op compatibility for stale cached manual-drive UI scripts."""
+    return jsonify({'status': 'ignored'})
 
 
 @app.route('/update_detection_config', methods=['POST'])
