@@ -120,6 +120,12 @@ def video_debug():
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
+@app.route('/video/mask')
+def video_mask():
+    return Response(_stream_runtime_frame('mask'),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
+
 @app.route('/status')
 def status():
     return jsonify(runtime.get_status())

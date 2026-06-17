@@ -9,6 +9,10 @@ _CONTENT = '''
                     <img src="/video/debug" class="stream project-stream" id="debugStream">
                 </div>
                 <div class="video-card">
+                    <div class="video-title">Lane / Red HSV Mask View</div>
+                    <img src="/video/mask" class="stream project-stream" id="maskStream">
+                </div>
+                <div class="video-card">
                     <div class="video-title">Raw Bot Camera</div>
                     <img src="/video/raw" class="stream project-stream" id="rawStream">
                 </div>
@@ -81,7 +85,7 @@ _CONTENT = '''
 _EXTRA_CSS = '''
 .dual-video {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
     width: 100%;
     height: 100%;

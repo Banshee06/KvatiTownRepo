@@ -26,6 +26,7 @@ class ProjectRuntime:
         self._running = False
         self._raw_frame = None
         self._debug_frame = None
+        self._mask_frame = None
         self._pending_hsv = None
         self._pending_detection = None
         self._pending_lane = None
@@ -60,14 +61,20 @@ class ProjectRuntime:
         with self._lock:
             return self._running
 
-    def set_frames(self, raw_frame, debug_frame):
+    def set_frames(self, raw_frame, debug_frame, mask_frame=None):
         with self._lock:
             self._raw_frame = raw_frame.copy() if raw_frame is not None else None
             self._debug_frame = debug_frame.copy() if debug_frame is not None else None
+            self._mask_frame = mask_frame.copy() if mask_frame is not None else None
 
     def get_frame(self, kind='debug'):
         with self._lock:
-            frame = self._debug_frame if kind == 'debug' else self._raw_frame
+            if kind == 'raw':
+                frame = self._raw_frame
+            elif kind == 'mask':
+                frame = self._mask_frame
+            else:
+                frame = self._debug_frame
             return frame.copy() if frame is not None else None
 
     def update_status(self, **kwargs):
@@ -184,6 +191,60 @@ def _draw_overlay(frame_bgr, detections, controller, det_agent, left, right, run
     return out
 
 
+def _draw_mask_view(frame_bgr):
+    """Create a visual-servoing-style mask dashboard for project HSV perception."""
+    try:
+        mask_yellow, mask_white = lane_perception.detect_lane_markings(frame_bgr)
+        mask_red = lane_perception.detect_red_line(frame_bgr)
+    except Exception as e:
+        out = frame_bgr.copy()
+        cv2.putText(out, f"Mask error: {e}", (20, 40), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.7, (0, 0, 255), 2, cv2.LINE_AA)
+        return out
+
+    roi = frame_bgr[160:, :, :]
+    h, w = roi.shape[:2]
+    display_w = 320
+    display_h = int(h * display_w / w)
+
+    cam = cv2.resize(roi, (display_w, display_h))
+
+    combined = cv2.bitwise_or(mask_yellow, mask_white)
+    combined = cv2.bitwise_or(combined, mask_red)
+    combined_vis = cv2.resize(cv2.applyColorMap(combined, cv2.COLORMAP_HOT),
+                              (display_w, display_h))
+
+    lane_color = np.zeros((*mask_yellow.shape, 3), dtype=np.uint8)
+    lane_color[:, :, 0] = mask_white
+    lane_color[:, :, 1] = np.maximum(mask_white, mask_yellow)
+    lane_color[:, :, 2] = mask_yellow
+    lane_vis = cv2.resize(lane_color, (display_w, display_h))
+
+    red_color = np.zeros((*mask_red.shape, 3), dtype=np.uint8)
+    red_color[:, :, 2] = mask_red
+    red_vis = cv2.resize(red_color, (display_w, display_h))
+
+    grid = np.vstack([
+        np.hstack([cam, combined_vis]),
+        np.hstack([lane_vis, red_vis]),
+    ])
+
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    green = (0, 255, 0)
+    cv2.putText(grid, "Camera ROI", (10, 22), font, 0.55, green, 1)
+    cv2.putText(grid, "Combined HSV Mask", (display_w + 10, 22), font, 0.55, green, 1)
+    cv2.putText(grid, "White + Yellow Lanes", (10, display_h + 22), font, 0.55, green, 1)
+    cv2.putText(grid, "Red Stop-Line Mask", (display_w + 10, display_h + 22), font, 0.55, green, 1)
+
+    counts = (
+        f"yellow={int(np.count_nonzero(mask_yellow))}  "
+        f"white={int(np.count_nonzero(mask_white))}  "
+        f"red={int(np.count_nonzero(mask_red))}"
+    )
+    cv2.putText(grid, counts, (10, grid.shape[0] - 12), font, 0.5, (255, 255, 255), 1)
+    return grid
+
+
 def main(camera, wheels, leds, stop_event, runtime=None):
     """Called by server.py with hardware already initialised."""
     global _last_detections
@@ -265,7 +326,8 @@ def main(camera, wheels, leds, stop_event, runtime=None):
         debug_frame = _draw_overlay(
             frame_bgr, detections, controller, det_agent, left, right, runtime.is_running()
         )
-        runtime.set_frames(frame_bgr, debug_frame)
+        mask_frame = _draw_mask_view(frame_bgr)
+        runtime.set_frames(frame_bgr, debug_frame, mask_frame)
         runtime.update_status(
             agent_ready=True,
             nav_state=state,
