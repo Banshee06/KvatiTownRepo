@@ -128,6 +128,24 @@ class LaneServoingAgent:
         self.frame_count += 1
         bgr = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
+
+        # --- RED LINE DETECTION
+        try:
+            # Calling function
+            mask_r = student.detect_red_line(bgr)
+
+            # again adjusting the cropped image
+            red_roi = mask_r[-110:, 220:420]
+            red_count = int(np.count_nonzero(red_roi))
+
+            # If we see enough red pixels, STOP.
+
+            if red_count > self.detection_threshold * 2:
+                print(f"RED LINE STOP: {red_count} pixels")
+                # For now, we return 0,0. In the project, this will trigger the State Machine.
+                return 0.0, 0.0
+        except Exception as e:
+            print(f"[Agent] Red Line Error: {e}")
         try:
             mask_left, mask_right = student.detect_lane_markings(bgr)
         except Exception as e:
