@@ -17,6 +17,29 @@ _yellow_upper = np.array([_h.get('yellow_upper_h', 0),  _h.get('yellow_upper_s',
 _white_lower = np.array([_h.get('white_lower_h', 0),   _h.get('white_lower_s', 0), _h.get('white_lower_v', 0)])
 _white_upper = np.array([_h.get('white_upper_h', 0), _h.get('white_upper_s', 0), _h.get('white_upper_v', 0)])
 
+#adding hsv values to detect red stop lines
+
+_red_lower1 = np.array([_h.get('red_lower_h', 0),   _h.get('red_lower_s', 0), _h.get('red_lower_v', 0)])
+_red_upper1 = np.array([_h.get('red_upper_h', 0),  _h.get('red_upper_s', 0), _h.get('red_upper_v', 0)])
+
+_red_lower2 = np.array([_h.get('red_lower_h2', 0), _h.get('red_lower_s', 0), _h.get('red_lower_v', 0)])
+_red_upper2 = np.array([_h.get('red_upper_h2', 0), _h.get('red_upper_s', 0), _h.get('red_upper_v', 0)])
+
+
+
+
+
+def detect_red_line(image: np.ndarray) -> np.ndarray:
+    # seperate function for red masking red lanes
+    image = image[160:, :, :]
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+    mask1 = cv2.inRange(hsv, _red_lower1, _red_upper1)
+    mask2 = cv2.inRange(hsv, _red_lower2, _red_upper2)
+    
+    return cv2.bitwise_or(mask1, mask2)
+
+
 def detect_lane_markings(image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     "cropping bottom half of the image to not get confused with the wall "
     image = image[160:,:,:]
